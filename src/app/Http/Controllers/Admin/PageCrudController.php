@@ -140,7 +140,8 @@ class PageCrudController extends CrudController
                                 'name' => 'title',
                                 'label' => 'Page Title',
                                 'type' => 'text',
-                                // 'disabled' => 'disabled'
+                                'langs' => ['en', 'zh_TW', 'jp', 'kr'],
+//                                 'disabled' => 'disabled'
                             ]);
         $this->crud->addField([
                                 'name' => 'slug',
