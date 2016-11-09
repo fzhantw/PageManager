@@ -4,9 +4,11 @@ namespace Backpack\PageManager\app\Http\Controllers\Admin;
 
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 // VALIDATION: change the requests to match your own file names if you need form validation
+use Backpack\LangFileManager\app\Models\Language;
 use Backpack\PageManager\app\Http\Requests\PageRequest as StoreRequest;
 use Backpack\PageManager\app\Http\Requests\PageRequest as UpdateRequest;
 use App\PageTemplates;
+use Illuminate\Http\Request;
 
 class PageCrudController extends CrudController
 {
@@ -21,7 +23,7 @@ class PageCrudController extends CrudController
         | BASIC CRUD INFORMATION
         |--------------------------------------------------------------------------
         */
-        $this->crud->setModel("Backpack\PageManager\app\Models\Page");
+        $this->crud->setModel("Backpack\\PageManager\\app\\Models\\MultilingualPage");
         $this->crud->setRoute(config('backpack.base.route_prefix').'/page');
         $this->crud->setEntityNameStrings('page', 'pages');
 
@@ -65,8 +67,8 @@ class PageCrudController extends CrudController
     // Overwrites the CrudController create() method to add template usage.
     public function create($template = false)
     {
-        $this->addDefaultPageFields($template);
-        $this->useTemplate($template);
+        $request = app('request');
+        $this->setFields($template, $request);
 
         return parent::create();
     }
@@ -74,8 +76,9 @@ class PageCrudController extends CrudController
     // Overwrites the CrudController store() method to add template usage.
     public function store(StoreRequest $request)
     {
-        $this->addDefaultPageFields(\Request::input('template'));
-        $this->useTemplate(\Request::input('template'));
+        $template = $request->input('template');
+
+        $this->setFields($template, $request);
 
         return parent::storeCrud();
     }
@@ -90,8 +93,7 @@ class PageCrudController extends CrudController
             $template = $this->data['entry']->template;
         }
 
-        $this->addDefaultPageFields($template);
-        $this->useTemplate($template);
+        $this->setFields($template, app('request'));
 
         return parent::edit($id);
     }
@@ -99,8 +101,9 @@ class PageCrudController extends CrudController
     // Overwrites the CrudController update() method to add template usage.
     public function update(UpdateRequest $request)
     {
-        $this->addDefaultPageFields(\Request::input('template'));
-        $this->useTemplate(\Request::input('template'));
+        $template = $request->input('template');
+
+        $this->setFields($template, $request);
 
         return parent::updateCrud();
     }
@@ -136,13 +139,13 @@ class PageCrudController extends CrudController
                                 ],
                                 // 'disabled' => 'disabled'
                             ]);
-        $this->crud->addField([
-                                'name' => 'title',
-                                'label' => 'Page Title',
-                                'type' => 'text',
-                                'langs' => ['en', 'zh_TW', 'jp', 'kr'],
-//                                 'disabled' => 'disabled'
-                            ]);
+//        $this->crud->addField([
+//                                'name' => 'title',
+//                                'label' => 'Page Title',
+//                                'type' => 'text',
+//                                'langs' => ['en', 'zh_TW', 'jp', 'kr'],
+////                                 'disabled' => 'disabled'
+//                            ]);
         $this->crud->addField([
                                 'name' => 'slug',
                                 'label' => 'Page Slug (URL)',
@@ -157,7 +160,7 @@ class PageCrudController extends CrudController
      *
      * @param  string $template_name The name of the template that should be used in the current form.
      */
-    public function useTemplate($template_name = false)
+    public function useTemplate($template_name = false, $lang)
     {
         $templates = $this->getTemplates();
 
@@ -168,7 +171,7 @@ class PageCrudController extends CrudController
 
         // actually use the template
         if ($template_name) {
-            $this->{$template_name}();
+            $this->{$template_name}($lang);
         }
     }
 
@@ -203,5 +206,24 @@ class PageCrudController extends CrudController
         }
 
         return $templates_array;
+    }
+
+    /**
+     * @return array
+     */
+    public function getActiveLangs()
+    {
+        return Language::getActiveLanguagesArray();
+    }
+
+    protected function setFields($template, $request)
+    {
+        $this->addDefaultPageFields($template);
+
+        $langs = $this->getActiveLangs();
+
+        foreach ($langs as $lang) {
+            $this->useTemplate($template, $lang);
+        }
     }
 }

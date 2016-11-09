@@ -7,7 +7,7 @@ use Backpack\CRUD\CrudTrait;
 use Cviebrock\EloquentSluggable\Sluggable;
 use Cviebrock\EloquentSluggable\SluggableScopeHelpers;
 
-class Page extends Model
+class MultilingualPage extends Model
 {
     use CrudTrait;
     use Sluggable;
@@ -28,7 +28,11 @@ class Page extends Model
     // protected $dates = [];
     protected $fakeColumns = ['extras'];
 
-    protected $casts = ['title' => 'array'];
+    protected $casts = [
+        'title' => 'array',
+        'content' => 'array',
+        'extras' => 'array',
+    ];
 
     /**
      * Return the sluggable configuration array for this model.
@@ -98,4 +102,14 @@ class Page extends Model
     | MUTATORS
     |--------------------------------------------------------------------------
     */
+
+    public function __get($name)
+    {
+        if (preg_match('/(.+)\[(\d+)\]/', $name, $matches)) {
+            $value = parent::__get($matches[1]);
+            return $value[$matches[2]];
+        }
+
+        return parent::__get($name);
+    }
 }
