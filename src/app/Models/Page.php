@@ -2,12 +2,13 @@
 
 namespace Backpack\PageManager\app\Models;
 
+use Backpack\LangFileManager\app\Models\Language;
 use Illuminate\Database\Eloquent\Model;
 use Backpack\CRUD\CrudTrait;
 use Cviebrock\EloquentSluggable\Sluggable;
 use Cviebrock\EloquentSluggable\SluggableScopeHelpers;
 
-class MultilingualPage extends Model
+class Page extends Model
 {
     use CrudTrait;
     use Sluggable;
@@ -23,7 +24,7 @@ class MultilingualPage extends Model
     protected $primaryKey = 'id';
     public $timestamps = true;
     // protected $guarded = ['id'];
-    protected $fillable = ['template', 'name', 'title', 'slug', 'content', 'extras'];
+    protected $fillable = ['template', 'title', 'slug', 'content', 'name', 'description', 'extras'];
     // protected $hidden = [];
     // protected $dates = [];
     protected $fakeColumns = ['extras'];
@@ -31,6 +32,7 @@ class MultilingualPage extends Model
     protected $casts = [
         'title' => 'array',
         'content' => 'array',
+        'description' => 'array',
         'extras' => 'array',
     ];
 
@@ -59,14 +61,18 @@ class MultilingualPage extends Model
         return trim(preg_replace('/(id|at|\[\])$/i', '', ucfirst(str_replace('_', ' ', $this->template))));
     }
 
-    public function getPageLink()
+    public function getPageLink($lang = null)
     {
-        return url($this->slug);
+        if (!$lang) {
+            $lang = Language::getDefault()->abbr;
+        }
+
+        return route('page', ['lang' => $lang, 'page' => $this->slug]);
     }
 
     public function getOpenButton()
     {
-        return '<a class="btn btn-default btn-xs" href="'.$this->getPageLink().'" target="_blank"><i class="fa fa-eye"></i> Open</a>';
+        return '<a class="btn btn-default btn-xs" href="'.$this->getPageLink().'" target="_blank"><i class="fa fa-eye"></i> 開啟</a>';
     }
 
     /*
@@ -97,6 +103,38 @@ class MultilingualPage extends Model
         return $this->title;
     }
 
+    public function getTitle($lang_id = null)
+    {
+        if (!$lang_id) {
+            $lang_id = Language::getDefault();
+        }
+
+        return $this->title[$lang_id];
+    }
+
+    public function getContent($lang_id = null)
+    {
+        if (!$lang_id) {
+            $lang_id = Language::getDefault()->id;
+        }
+
+        if (array_key_exists($lang_id, $this->content)) {
+            return $this->content[$lang_id];
+        } else {
+            $lang = Language::find($lang_id);
+            return view('pages.content.' . $this->name . '_' . $lang->abbr . '.blade');
+        }
+    }
+
+    public function getDescription($lang_id = null)
+    {
+        if (!$lang_id) {
+            $lang_id = Language::getDefault();
+        }
+
+        return $this->description[$lang_id];
+    }
+
     /*
     |--------------------------------------------------------------------------
     | MUTATORS
@@ -107,7 +145,8 @@ class MultilingualPage extends Model
     {
         if (preg_match('/(.+)\[(\d+)\]/', $name, $matches)) {
             $value = parent::__get($matches[1]);
-            return $value[$matches[2]];
+
+            return array_key_exists($matches[2], $value) ? $value[$matches[2]]: '';
         }
 
         return parent::__get($name);

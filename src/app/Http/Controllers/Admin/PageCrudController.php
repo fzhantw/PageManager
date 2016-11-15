@@ -23,7 +23,7 @@ class PageCrudController extends CrudController
         | BASIC CRUD INFORMATION
         |--------------------------------------------------------------------------
         */
-        $this->crud->setModel("Backpack\\PageManager\\app\\Models\\MultilingualPage");
+        $this->crud->setModel("Backpack\\PageManager\\app\\Models\\Page");
         $this->crud->setRoute(config('backpack.base.route_prefix').'/page');
         $this->crud->setEntityNameStrings('page', 'pages');
 
@@ -33,13 +33,12 @@ class PageCrudController extends CrudController
         |--------------------------------------------------------------------------
         */
 
-        $this->crud->addColumn('name');
+        $this->crud->addColumn('slug');
         $this->crud->addColumn([
                                 'name' => 'template',
                                 'type' => 'model_function',
                                 'function_name' => 'getTemplateName',
                                 ]);
-        $this->crud->addColumn('slug');
 
         /*
         |--------------------------------------------------------------------------
@@ -121,7 +120,7 @@ class PageCrudController extends CrudController
     {
         $this->crud->addField([
                                 'name' => 'template',
-                                'label' => 'Template',
+                                'label' => '樣板',
                                 'type' => 'select_page_template',
                                 'options' => $this->getTemplatesArray(),
                                 'value' => $template,
@@ -132,20 +131,13 @@ class PageCrudController extends CrudController
                             ]);
         $this->crud->addField([
                                 'name' => 'name',
-                                'label' => 'Page name (only seen by admins)',
+                                'label' => '後台辨識用',
                                 'type' => 'text',
                                 'wrapperAttributes' => [
                                     'class' => 'form-group col-md-6',
                                 ],
                                 // 'disabled' => 'disabled'
                             ]);
-//        $this->crud->addField([
-//                                'name' => 'title',
-//                                'label' => 'Page Title',
-//                                'type' => 'text',
-//                                'langs' => ['en', 'zh_TW', 'jp', 'kr'],
-////                                 'disabled' => 'disabled'
-//                            ]);
         $this->crud->addField([
                                 'name' => 'slug',
                                 'label' => 'Page Slug (URL)',
@@ -153,6 +145,14 @@ class PageCrudController extends CrudController
                                 'hint' => 'Will be automatically generated from your title, if left empty.',
                                 // 'disabled' => 'disabled'
                             ]);
+        $this->crud->addField([
+            'name' => 'feature_image',
+            'label' => '特色圖片',
+            'type' => 'browse',
+            'hint' => '建議尺寸1200 x 630.',
+            'fake' => true,
+            'store_in' => 'extras',
+        ]);
     }
 
     /**
