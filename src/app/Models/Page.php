@@ -36,6 +36,24 @@ class Page extends Model
         'extras' => 'array',
     ];
 
+    protected static function boot() {
+        parent::boot();
+
+        self::created(function($page) {
+            $file_dir = resource_path('views/pages/content');
+
+            $langs = Language::getActiveLanguagesArray();
+
+            foreach ($langs as $lang) {
+                $file_path = $file_dir . '/' . $page['name'] . '_' . $lang['abbr'] . '.blade.php';
+
+                if (!file_exists($file_path)) {
+                    touch($file_path);
+                }
+            }
+        });
+    }
+
     /**
      * Return the sluggable configuration array for this model.
      *
@@ -93,6 +111,11 @@ class Page extends Model
     |--------------------------------------------------------------------------
     */
 
+    public function getViewPath($lang)
+    {
+        return resource_path('views/pages/content/' . $this->name . '_' . $lang . '.blade.php');
+    }
+
     // The slug is created automatically from the "name" field if no slug exists.
     public function getSlugOrTitleAttribute()
     {
@@ -106,10 +129,10 @@ class Page extends Model
     public function getTitle($lang_id = null)
     {
         if (!$lang_id) {
-            $lang_id = Language::getDefault();
+            $lang_id = Language::getDefault()->id;
         }
 
-        return $this->title[$lang_id];
+        return array_key_exists($lang_id, $this->title)? $this->title[$lang_id]: '';
     }
 
     public function getContent($lang_id = null)
@@ -118,11 +141,15 @@ class Page extends Model
             $lang_id = Language::getDefault()->id;
         }
 
-        if (array_key_exists($lang_id, $this->content)) {
-            return $this->content[$lang_id];
+        if (array_key_exists($lang_id, $this->content) && (($content = $this->content[$lang_id]) !== '')) {
+            return $content;
         } else {
             $lang = Language::find($lang_id);
-            return view('pages.content.' . $this->name . '_' . $lang->abbr . '.blade');
+
+            $content_name = $this->name;
+            $lang_abbr = $lang->abbr;
+
+            return view("pages.content.${content_name}_${lang_abbr}");
         }
     }
 
@@ -132,7 +159,7 @@ class Page extends Model
             $lang_id = Language::getDefault();
         }
 
-        return $this->description[$lang_id];
+        return array_key_exists($lang_id, $this->description)? $this->description[$lang_id]: '';
     }
 
     /*

@@ -33,12 +33,12 @@ class PageCrudController extends CrudController
         |--------------------------------------------------------------------------
         */
 
-        $this->crud->addColumn('slug');
         $this->crud->addColumn([
-                                'name' => 'template',
+                                'name' => 'title',
                                 'type' => 'model_function',
-                                'function_name' => 'getTemplateName',
+                                'function_name' => 'getTitle',
                                 ]);
+        $this->crud->addColumn('slug');
 
         /*
         |--------------------------------------------------------------------------
