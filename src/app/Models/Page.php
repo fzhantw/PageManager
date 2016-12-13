@@ -188,7 +188,6 @@ class Page extends Model
 
             switch ($matches[1]) {
                 case 'content':
-                    \Debugbar::info($matches);
                     return $this->getContent($matches[2]);
                     break;
                 default:
