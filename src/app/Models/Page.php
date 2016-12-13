@@ -153,6 +153,20 @@ class Page extends Model
         }
     }
 
+    public function getContentByView($lang_id = null)
+    {
+        if (!$lang_id) {
+            $lang_id = Language::getDefault()->id;
+        }
+
+        $lang = Language::find($lang_id);
+
+        $content_name = $this->name;
+        $lang_abbr = $lang->abbr;
+
+        return view("pages.content.${content_name}_${lang_abbr}");
+    }
+
     public function getDescription($lang_id = null)
     {
         if (!$lang_id) {
@@ -171,7 +185,16 @@ class Page extends Model
     public function __get($name)
     {
         if (preg_match('/(.+)\[(\d+)\]/', $name, $matches)) {
-            $value = parent::__get($matches[1]);
+
+            switch ($matches[1]) {
+                case 'content':
+                    \Debugbar::info($matches);
+                    return $this->getContent($matches[2]);
+                    break;
+                default:
+                    $value = parent::__get($matches[1]);
+                    break;
+            }
 
             return array_key_exists($matches[2], $value) ? $value[$matches[2]]: '';
         }
