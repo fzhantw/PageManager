@@ -153,6 +153,13 @@ class PageCrudController extends CrudController
             'fake' => true,
             'store_in' => 'extras',
         ]);
+        $this->crud->addField([
+            'name' => 'published',
+            'label' => '發佈',
+            'type' => 'checkbox',
+            'hint' => '發佈的頁面才會被加入靜態版本裡.',
+            'fake' => false,
+        ]);
     }
 
     /**
