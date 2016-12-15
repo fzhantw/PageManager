@@ -8,6 +8,7 @@ use Backpack\LangFileManager\app\Models\Language;
 use Backpack\PageManager\app\Http\Requests\PageRequest as StoreRequest;
 use Backpack\PageManager\app\Http\Requests\PageRequest as UpdateRequest;
 use App\PageTemplates;
+use Backpack\PageManager\app\Models\Page;
 use Illuminate\Http\Request;
 
 class PageCrudController extends CrudController
@@ -38,6 +39,7 @@ class PageCrudController extends CrudController
                                 'type' => 'model_function',
                                 'function_name' => 'getTitle',
                                 ]);
+        $this->crud->addColumn('published');
         $this->crud->addColumn('slug');
 
         /*
@@ -57,6 +59,7 @@ class PageCrudController extends CrudController
         |--------------------------------------------------------------------------
         */
         $this->crud->addButtonFromModelFunction('line', 'open', 'getOpenButton', 'beginning');
+        $this->crud->addButtonFromModelFunction('line', 'open', 'getPublishButton', 'open');
     }
 
     // -----------------------------------------------
@@ -223,6 +226,27 @@ class PageCrudController extends CrudController
         return Language::getActiveLanguagesArray();
     }
 
+    public function publish($id)
+    {
+        $page = Page::find($id);
+
+        $page->update([
+            'published' => true,
+        ]);
+
+        return  redirect()->back();
+    }
+
+    public function unpublish($id)
+    {
+        $page = Page::find($id);
+
+        $page->update([
+            'published' => false,
+        ]);
+
+        return  redirect()->back();
+    }
     protected function setFields($template, $request)
     {
         $this->addDefaultPageFields($template);

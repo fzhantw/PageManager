@@ -55,6 +55,8 @@ class PageManagerServiceProvider extends ServiceProvider
                 Route::post('page/reorder/{lang}', 'Admin\PageCrudController@saveReorder');
                 Route::get('page/{id}/details', 'Admin\PageCrudController@showDetailsRow');
                 Route::get('page/{id}/translate/{lang}', 'Admin\PageCrudController@translateItem');
+                Route::post('page/{id}/publish', 'Admin\PageCrudController@publish');
+                Route::post('page/{id}/unpublish', 'Admin\PageCrudController@unpublish');
                 Route::resource('page', 'Admin\PageCrudController');
             });
         });

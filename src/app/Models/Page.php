@@ -93,6 +93,15 @@ class Page extends Model
         return '<a class="btn btn-default btn-xs" href="'.$this->getPageLink().'" target="_blank"><i class="fa fa-eye"></i> 開啟</a>';
     }
 
+    public function getPublishButton()
+    {
+        if ($this->published) {
+            return '<form style="display: inline;" action="./page/' . $this->id . '/unpublish" method="post"><button class="btn btn-default btn-xs"><i class="fa fa-unlink"></i> 取消發佈</button>' . csrf_field() .'</form>';
+        } else {
+            return '<form style="display: inline;" action="./page/' . $this->id . '/publish" method="post"><button class="btn btn-default btn-xs"><i class="fa fa-link"></i> 發佈</button>' . csrf_field() .'</form>';
+        }
+    }
+
     /*
     |--------------------------------------------------------------------------
     | RELATIONS
