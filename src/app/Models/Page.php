@@ -150,7 +150,7 @@ class Page extends Model
             $lang_id = Language::getDefault()->id;
         }
 
-        if (array_key_exists($lang_id, $this->content) && (($content = $this->content[$lang_id]) !== '')) {
+        if (array_key_exists($lang_id, $this->content) && (($content = $this->content[$lang_id]) !== '') && is_string($content)) {
             return $content;
         } else {
             $lang = Language::find($lang_id);
